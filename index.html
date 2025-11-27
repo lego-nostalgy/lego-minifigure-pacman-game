@@ -3,87 +3,850 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LEGO Pac-Man Game</title>
+    <title>LEGO Pixel Pac-Man</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
+        }
+
         body {
+            background: linear-gradient(135deg, #0066cc 0%, #0099ff 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background-color: #ffcc00;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            border: 8px solid #ff3300;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 30px;
+            background: repeating-linear-gradient(
+                90deg,
+                #ff3300,
+                #ff3300 20px,
+                #ffcc00 20px,
+                #ffcc00 40px
+            );
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #ff3300;
+            text-shadow: 3px 3px 0 #000, 5px 5px 0 rgba(0, 0, 0, 0.2);
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #0066cc;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .game-board {
+            background-color: #000;
+            border: 10px solid #333;
+            border-radius: 5px;
+            display: grid;
+            grid-template-columns: repeat(19, 1fr);
+            grid-template-rows: repeat(21, 1fr);
+            width: 100%;
+            max-width: 570px;
+            aspect-ratio: 19/21;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.7);
+        }
+
+        .cell {
+            width: 100%;
+            height: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            background-color: black;
-            margin: 0;
         }
-        canvas {
-            border: 1px solid white;
+
+        .wall {
+            background-color: #0066cc;
+            border-radius: 3px;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            background-color: #ffcc00;
+            border-radius: 50%;
+        }
+
+        .power-pellet {
+            width: 12px;
+            height: 12px;
+            background-color: #ffcc00;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+
+        .pacman {
+            width: 80%;
+            height: 80%;
+            background-color: #ffcc00;
+            border-radius: 50%;
+            position: relative;
+            z-index: 10;
+        }
+
+        .pacman::before {
+            content: "";
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 10px 0 10px 20px;
+            border-color: transparent transparent transparent #000;
+            top: 50%;
+            right: 30%;
+            transform: translateY(-50%);
+        }
+
+        .ghost {
+            width: 80%;
+            height: 80%;
+            border-radius: 50% 50% 0 0;
+            position: relative;
+            z-index: 5;
+        }
+
+        .ghost::after {
+            content: "";
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background: inherit;
+            clip-path: polygon(0 0, 20% 100%, 40% 0, 60% 100%, 80% 0, 100% 100%, 100% 0, 0 0);
+        }
+
+        .blinky { background-color: #ff3300; }
+        .pinky { background-color: #ff99cc; }
+        .inky { background-color: #00ccff; }
+        .clyde { background-color: #ff9900; }
+
+        .scared {
+            background-color: #0066cc !important;
+            animation: scared 0.8s infinite;
+        }
+
+        @keyframes scared {
+            0% { background-color: #0066cc; }
+            50% { background-color: #ffffff; }
+            100% { background-color: #0066cc; }
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 570px;
+            background-color: #333;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .score, .lives, .level {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .score-value, .lives-value, .level-value {
+            font-size: 1.5rem;
+            color: #ffcc00;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        button {
+            background-color: #ff3300;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #cc2900;
+            transition: all 0.1s;
+        }
+
+        button:hover {
+            background-color: #ff4411;
+            transform: translateY(2px);
+            box-shadow: 0 3px 0 #cc2900;
+        }
+
+        button:active {
+            transform: translateY(5px);
+            box-shadow: 0 0 0 #cc2900;
+        }
+
+        .instructions {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            width: 100%;
+            max-width: 570px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .instructions h3 {
+            color: #0066cc;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .instructions p {
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .keyboard-controls {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .key {
+            background-color: #333;
+            color: white;
+            padding: 8px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 600px) {
+            .logo {
+                font-size: 2.2rem;
+            }
+            
+            .game-info {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            button {
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas" width="600" height="400"></canvas>
+    <div class="container">
+        <div class="header">
+            <div class="logo">LEGO® PAC-MAN</div>
+            <div class="subtitle">Pixel Arcade Adventure</div>
+        </div>
+        
+        <div class="game-container">
+            <div class="game-board" id="gameBoard">
+                <!-- Игровое поле будет сгенерировано JavaScript -->
+            </div>
+            
+            <div class="game-info">
+                <div class="score">
+                    <div>ОЧКИ</div>
+                    <div class="score-value" id="score">0</div>
+                </div>
+                <div class="lives">
+                    <div>ЖИЗНИ</div>
+                    <div class="lives-value" id="lives">3</div>
+                </div>
+                <div class="level">
+                    <div>УРОВЕНЬ</div>
+                    <div class="level-value" id="level">1</div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <div class="buttons">
+                    <button id="startBtn">СТАРТ</button>
+                    <button id="pauseBtn">ПАУЗА</button>
+                    <button id="resetBtn">СБРОС</button>
+                </div>
+            </div>
+            
+            <div class="instructions">
+                <h3>УПРАВЛЕНИЕ</h3>
+                <p>Используйте стрелки на клавиатуре для перемещения Пакмана</p>
+                <p>Собирайте точки и избегайте призраков!</p>
+                
+                <div class="keyboard-controls">
+                    <div class="key">↑</div>
+                    <div class="key">ВВЕРХ</div>
+                    <div class="key"></div>
+                    <div class="key">←</div>
+                    <div class="key">ПАКМАН</div>
+                    <div class="key">→</div>
+                    <div class="key"></div>
+                    <div class="key">↓</div>
+                    <div class="key"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        Вдохновлено конструктором LEGO® 10323 "PAC-MAN Arcade" | Создано для GitHub
+    </div>
+
     <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
+        document.addEventListener('DOMContentLoaded', function() {
+            // Конфигурация игры
+            const config = {
+                rows: 21,
+                cols: 19,
+                cellSize: 30,
+                pacmanSpeed: 150,
+                ghostSpeed: 200,
+                dotScore: 10,
+                powerPelletScore: 50,
+                ghostScore: 200
+            };
 
-        const pacman = {
-            x: 50,
-            y: 50,
-            size: 30,
-            speed: 5,
-            draw() {
-                ctx.fillStyle = 'yellow';
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0.2 * Math.PI, 1.8 * Math.PI); // Создаем "рот"
-                ctx.lineTo(this.x, this.y);
-                ctx.fill();
-            },
-            move(dx, dy) {
-                this.x += dx * this.speed;
-                this.y += dy * this.speed;
+            // Состояние игры
+            const gameState = {
+                score: 0,
+                lives: 3,
+                level: 1,
+                isRunning: false,
+                isPaused: false,
+                dotsRemaining: 0,
+                powerMode: false,
+                powerModeTimer: null
+            };
 
-                // Ограничение движения в пределах канваса
-                if (this.x < this.size) this.x = this.size;
-                if (this.x > canvas.width - this.size) this.x = canvas.width - this.size;
-                if (this.y < this.size) this.y = this.size;
-                if (this.y > canvas.height - this.size) this.y = canvas.height - this.size;
+            // Элементы DOM
+            const gameBoard = document.getElementById('gameBoard');
+            const scoreElement = document.getElementById('score');
+            const livesElement = document.getElementById('lives');
+            const levelElement = document.getElementById('level');
+            const startBtn = document.getElementById('startBtn');
+            const pauseBtn = document.getElementById('pauseBtn');
+            const resetBtn = document.getElementById('resetBtn');
+
+            // Игровые объекты
+            let pacman = { row: 10, col: 9, direction: 'right' };
+            let ghosts = [
+                { row: 8, col: 9, type: 'blinky', direction: 'left' },
+                { row: 9, col: 8, type: 'pinky', direction: 'up' },
+                { row: 9, col: 10, type: 'inky', direction: 'down' },
+                { row: 10, col: 9, type: 'clyde', direction: 'right' }
+            ];
+
+            // Карта игрового поля (0 - пусто, 1 - стена, 2 - точка, 3 - энерджайзер)
+            const map = [
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                [1,2,2,2,2,2,2,2,2,1,2,2,2,2,2,2,2,2,1],
+                [1,3,1,1,2,1,1,1,2,1,2,1,1,1,2,1,1,3,1],
+                [1,2,1,1,2,1,1,1,2,1,2,1,1,1,2,1,1,2,1],
+                [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
+                [1,2,1,1,2,1,2,1,1,1,1,1,2,1,2,1,1,2,1],
+                [1,2,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,2,1],
+                [1,1,1,1,2,1,1,1,0,1,0,1,1,1,2,1,1,1,1],
+                [0,0,0,1,2,1,0,0,0,0,0,0,0,1,2,1,0,0,0],
+                [1,1,1,1,2,1,0,1,1,0,1,1,0,1,2,1,1,1,1],
+                [0,0,0,0,2,0,0,1,0,0,0,1,0,0,2,0,0,0,0],
+                [1,1,1,1,2,1,0,1,1,1,1,1,0,1,2,1,1,1,1],
+                [0,0,0,1,2,1,0,0,0,0,0,0,0,1,2,1,0,0,0],
+                [1,1,1,1,2,1,0,1,1,1,1,1,0,1,2,1,1,1,1],
+                [1,2,2,2,2,2,2,2,2,1,2,2,2,2,2,2,2,2,1],
+                [1,2,1,1,2,1,1,1,2,1,2,1,1,1,2,1,1,2,1],
+                [1,3,2,1,2,2,2,2,2,2,2,2,2,2,2,1,2,3,1],
+                [1,1,2,1,2,1,2,1,1,1,1,1,2,1,2,1,2,1,1],
+                [1,2,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,2,1],
+                [1,2,1,1,1,1,1,1,2,1,2,1,1,1,1,1,1,2,1],
+                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+            ];
+
+            // Инициализация игры
+            function initGame() {
+                createGameBoard();
+                updateGameInfo();
+                setupEventListeners();
             }
-        };
 
-        function drawMaze() {
-            ctx.fillStyle = 'gray';
-            for (let x = 0; x < canvas.width; x += 40) {
-                for (let y = 0; y < canvas.height; y += 40) {
-                    if ((x / 40 + y / 40) % 2 === 0) {
-                        ctx.fillRect(x, y, 40, 40);
+            // Создание игрового поля
+            function createGameBoard() {
+                gameBoard.innerHTML = '';
+                gameState.dotsRemaining = 0;
+                
+                for (let row = 0; row < config.rows; row++) {
+                    for (let col = 0; col < config.cols; col++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'cell';
+                        cell.dataset.row = row;
+                        cell.dataset.col = col;
+                        
+                        switch (map[row][col]) {
+                            case 1: // Стена
+                                cell.classList.add('wall');
+                                break;
+                            case 2: // Точка
+                                const dot = document.createElement('div');
+                                dot.className = 'dot';
+                                cell.appendChild(dot);
+                                gameState.dotsRemaining++;
+                                break;
+                            case 3: // Энерджайзер
+                                const powerPellet = document.createElement('div');
+                                powerPellet.className = 'power-pellet';
+                                cell.appendChild(powerPellet);
+                                gameState.dotsRemaining++;
+                                break;
+                        }
+                        
+                        gameBoard.appendChild(cell);
+                    }
+                }
+                
+                // Размещение Пакмана и призраков
+                placePacman();
+                placeGhosts();
+            }
+
+            // Размещение Пакмана на поле
+            function placePacman() {
+                pacman = { row: 10, col: 9, direction: 'right' };
+                updatePacmanPosition();
+            }
+
+            // Размещение призраков на поле
+            function placeGhosts() {
+                ghosts = [
+                    { row: 8, col: 9, type: 'blinky', direction: 'left' },
+                    { row: 9, col: 8, type: 'pinky', direction: 'up' },
+                    { row: 9, col: 10, type: 'inky', direction: 'down' },
+                    { row: 10, col: 9, type: 'clyde', direction: 'right' }
+                ];
+                updateGhostsPosition();
+            }
+
+            // Обновление позиции Пакмана
+            function updatePacmanPosition() {
+                // Удаляем Пакмана со всех клеток
+                document.querySelectorAll('.pacman').forEach(el => el.remove());
+                
+                // Добавляем Пакмана на текущую позицию
+                const cell = document.querySelector(`.cell[data-row="${pacman.row}"][data-col="${pacman.col}"]`);
+                const pacmanElement = document.createElement('div');
+                pacmanElement.className = 'pacman';
+                
+                // Поворачиваем Пакмана в зависимости от направления
+                switch (pacman.direction) {
+                    case 'up':
+                        pacmanElement.style.transform = 'rotate(-90deg)';
+                        break;
+                    case 'down':
+                        pacmanElement.style.transform = 'rotate(90deg)';
+                        break;
+                    case 'left':
+                        pacmanElement.style.transform = 'rotate(180deg)';
+                        break;
+                    case 'right':
+                        pacmanElement.style.transform = 'rotate(0deg)';
+                        break;
+                }
+                
+                cell.appendChild(pacmanElement);
+            }
+
+            // Обновление позиций призраков
+            function updateGhostsPosition() {
+                // Удаляем всех призраков
+                document.querySelectorAll('.ghost').forEach(el => el.remove());
+                
+                // Добавляем призраков на их позиции
+                ghosts.forEach(ghost => {
+                    const cell = document.querySelector(`.cell[data-row="${ghost.row}"][data-col="${ghost.col}"]`);
+                    const ghostElement = document.createElement('div');
+                    ghostElement.className = `ghost ${ghost.type}`;
+                    
+                    if (gameState.powerMode) {
+                        ghostElement.classList.add('scared');
+                    }
+                    
+                    cell.appendChild(ghostElement);
+                });
+            }
+
+            // Обновление информации об игре
+            function updateGameInfo() {
+                scoreElement.textContent = gameState.score;
+                livesElement.textContent = gameState.lives;
+                levelElement.textContent = gameState.level;
+            }
+
+            // Настройка обработчиков событий
+            function setupEventListeners() {
+                // Управление с клавиатуры
+                document.addEventListener('keydown', handleKeyPress);
+                
+                // Кнопки управления
+                startBtn.addEventListener('click', startGame);
+                pauseBtn.addEventListener('click', togglePause);
+                resetBtn.addEventListener('click', resetGame);
+            }
+
+            // Обработка нажатий клавиш
+            function handleKeyPress(e) {
+                if (!gameState.isRunning || gameState.isPaused) return;
+                
+                switch (e.key) {
+                    case 'ArrowUp':
+                        pacman.direction = 'up';
+                        break;
+                    case 'ArrowDown':
+                        pacman.direction = 'down';
+                        break;
+                    case 'ArrowLeft':
+                        pacman.direction = 'left';
+                        break;
+                    case 'ArrowRight':
+                        pacman.direction = 'right';
+                        break;
+                }
+                
+                movePacman();
+            }
+
+            // Движение Пакмана
+            function movePacman() {
+                let newRow = pacman.row;
+                let newCol = pacman.col;
+                
+                switch (pacman.direction) {
+                    case 'up':
+                        newRow--;
+                        break;
+                    case 'down':
+                        newRow++;
+                        break;
+                    case 'left':
+                        newCol--;
+                        break;
+                    case 'right':
+                        newCol++;
+                        break;
+                }
+                
+                // Проверка на выход за границы (телепортация)
+                if (newRow < 0) newRow = config.rows - 1;
+                if (newRow >= config.rows) newRow = 0;
+                if (newCol < 0) newCol = config.cols - 1;
+                if (newCol >= config.cols) newCol = 0;
+                
+                // Проверка на столкновение со стеной
+                if (map[newRow][newCol] !== 1) {
+                    pacman.row = newRow;
+                    pacman.col = newCol;
+                    
+                    // Сбор точек
+                    collectDot();
+                    
+                    // Проверка на столкновение с призраками
+                    checkGhostCollision();
+                    
+                    updatePacmanPosition();
+                }
+            }
+
+            // Сбор точек
+            function collectDot() {
+                const cell = document.querySelector(`.cell[data-row="${pacman.row}"][data-col="${pacman.col}"]`);
+                
+                if (cell.querySelector('.dot')) {
+                    cell.querySelector('.dot').remove();
+                    gameState.score += config.dotScore;
+                    gameState.dotsRemaining--;
+                } else if (cell.querySelector('.power-pellet')) {
+                    cell.querySelector('.power-pellet').remove();
+                    gameState.score += config.powerPelletScore;
+                    gameState.dotsRemaining--;
+                    activatePowerMode();
+                }
+                
+                updateGameInfo();
+                
+                // Проверка на завершение уровня
+                if (gameState.dotsRemaining === 0) {
+                    levelUp();
+                }
+            }
+
+            // Активация режима силы
+            function activatePowerMode() {
+                gameState.powerMode = true;
+                
+                // Сбрасываем таймер, если он уже активен
+                if (gameState.powerModeTimer) {
+                    clearTimeout(gameState.powerModeTimer);
+                }
+                
+                // Устанавливаем таймер на 10 секунд
+                gameState.powerModeTimer = setTimeout(() => {
+                    gameState.powerMode = false;
+                    updateGhostsPosition();
+                }, 10000);
+                
+                updateGhostsPosition();
+            }
+
+            // Проверка столкновения с призраками
+            function checkGhostCollision() {
+                for (let i = 0; i < ghosts.length; i++) {
+                    if (ghosts[i].row === pacman.row && ghosts[i].col === pacman.col) {
+                        if (gameState.powerMode) {
+                            // Пакман съедает призрака
+                            gameState.score += config.ghostScore;
+                            // Возвращаем призрака на стартовую позицию
+                            ghosts[i].row = 9;
+                            ghosts[i].col = 9;
+                            updateGameInfo();
+                        } else {
+                            // Призрак съедает Пакмана
+                            gameState.lives--;
+                            updateGameInfo();
+                            
+                            if (gameState.lives <= 0) {
+                                gameOver();
+                            } else {
+                                // Перезапуск уровня с теми же очками
+                                resetLevel();
+                            }
+                        }
+                        break;
                     }
                 }
             }
-        }
 
-        function gameLoop() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawMaze();
-            pacman.draw();
-            requestAnimationFrame(gameLoop);
-        }
-
-        window.addEventListener('keydown', (event) => {
-            switch (event.key) {
-                case 'ArrowUp':
-                    pacman.move(0, -1);
-                    break;
-                case 'ArrowDown':
-                    pacman.move(0, 1);
-                    break;
-                case 'ArrowLeft':
-                    pacman.move(-1, 0);
-                    break;
-                case 'ArrowRight':
-                    pacman.move(1, 0);
-                    break;
+            // Движение призраков
+            function moveGhosts() {
+                ghosts.forEach(ghost => {
+                    // Простой ИИ для призраков
+                    const directions = ['up', 'down', 'left', 'right'];
+                    let validDirections = [];
+                    
+                    // Проверяем возможные направления
+                    directions.forEach(dir => {
+                        let newRow = ghost.row;
+                        let newCol = ghost.col;
+                        
+                        switch (dir) {
+                            case 'up':
+                                newRow--;
+                                break;
+                            case 'down':
+                                newRow++;
+                                break;
+                            case 'left':
+                                newCol--;
+                                break;
+                            case 'right':
+                                newCol++;
+                                break;
+                        }
+                        
+                        // Проверка на выход за границы
+                        if (newRow < 0) newRow = config.rows - 1;
+                        if (newRow >= config.rows) newRow = 0;
+                        if (newCol < 0) newCol = config.cols - 1;
+                        if (newCol >= config.cols) newCol = 0;
+                        
+                        // Проверка на стену
+                        if (map[newRow][newCol] !== 1) {
+                            validDirections.push(dir);
+                        }
+                    });
+                    
+                    // Выбираем случайное направление из допустимых
+                    if (validDirections.length > 0) {
+                        const randomIndex = Math.floor(Math.random() * validDirections.length);
+                        ghost.direction = validDirections[randomIndex];
+                        
+                        // Двигаем призрака
+                        switch (ghost.direction) {
+                            case 'up':
+                                ghost.row--;
+                                break;
+                            case 'down':
+                                ghost.row++;
+                                break;
+                            case 'left':
+                                ghost.col--;
+                                break;
+                            case 'right':
+                                ghost.col++;
+                                break;
+                        }
+                        
+                        // Проверка на выход за границы
+                        if (ghost.row < 0) ghost.row = config.rows - 1;
+                        if (ghost.row >= config.rows) ghost.row = 0;
+                        if (ghost.col < 0) ghost.col = config.cols - 1;
+                        if (ghost.col >= config.cols) ghost.col = 0;
+                    }
+                });
+                
+                updateGhostsPosition();
+                checkGhostCollision();
             }
-        });
 
-        gameLoop();
+            // Запуск игры
+            function startGame() {
+                if (!gameState.isRunning) {
+                    gameState.isRunning = true;
+                    gameState.isPaused = false;
+                    
+                    // Запуск игрового цикла
+                    gameLoop = setInterval(() => {
+                        if (!gameState.isPaused) {
+                            movePacman();
+                            moveGhosts();
+                        }
+                    }, config.pacmanSpeed);
+                    
+                    startBtn.textContent = 'РЕСТАРТ';
+                } else {
+                    resetGame();
+                }
+            }
+
+            // Пауза/продолжение игры
+            function togglePause() {
+                if (gameState.isRunning) {
+                    gameState.isPaused = !gameState.isPaused;
+                    pauseBtn.textContent = gameState.isPaused ? 'ПРОДОЛЖИТЬ' : 'ПАУЗА';
+                }
+            }
+
+            // Сброс игры
+            function resetGame() {
+                clearInterval(gameLoop);
+                gameState.score = 0;
+                gameState.lives = 3;
+                gameState.level = 1;
+                gameState.isRunning = false;
+                gameState.isPaused = false;
+                gameState.powerMode = false;
+                
+                if (gameState.powerModeTimer) {
+                    clearTimeout(gameState.powerModeTimer);
+                }
+                
+                startBtn.textContent = 'СТАРТ';
+                pauseBtn.textContent = 'ПАУЗА';
+                
+                createGameBoard();
+                updateGameInfo();
+            }
+
+            // Сброс уровня
+            function resetLevel() {
+                placePacman();
+                placeGhosts();
+            }
+
+            // Переход на следующий уровень
+            function levelUp() {
+                gameState.level++;
+                updateGameInfo();
+                createGameBoard();
+            }
+
+            // Конец игры
+            function gameOver() {
+                clearInterval(gameLoop);
+                gameState.isRunning = false;
+                alert(`ИГРА ОКОНЧЕНА! Ваш счет: ${gameState.score}`);
+                resetGame();
+            }
+
+            // Инициализация игры при загрузке страницы
+            initGame();
+        });
     </script>
 </body>
 </html>
