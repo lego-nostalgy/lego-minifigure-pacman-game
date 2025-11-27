@@ -3,850 +3,879 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LEGO Pixel Pac-Man</title>
+    <title>Лего Тетрис</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
         }
-
+        
         body {
-            background: linear-gradient(135deg, #0066cc 0%, #0099ff 100%);
-            min-height: 100vh;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: #fff;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
+            min-height: 100vh;
             padding: 20px;
-            color: #333;
-        }
-
-        .container {
-            max-width: 800px;
-            width: 100%;
-            background-color: #ffcc00;
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-            border: 8px solid #ff3300;
-            position: relative;
             overflow: hidden;
         }
-
-        .container::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 30px;
-            background: repeating-linear-gradient(
-                90deg,
-                #ff3300,
-                #ff3300 20px,
-                #ffcc00 20px,
-                #ffcc00 40px
-            );
-            z-index: 1;
-        }
-
-        .header {
-            text-align: center;
-            margin-top: 20px;
-            margin-bottom: 20px;
-        }
-
-        .logo {
-            font-size: 3rem;
-            font-weight: bold;
-            color: #ff3300;
-            text-shadow: 3px 3px 0 #000, 5px 5px 0 rgba(0, 0, 0, 0.2);
-            letter-spacing: 2px;
-            margin-bottom: 10px;
-        }
-
-        .subtitle {
-            font-size: 1.2rem;
-            color: #0066cc;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
+        
         .game-container {
             display: flex;
+            gap: 30px;
+            max-width: 1000px;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        .game-area {
+            flex: 1;
+            display: flex;
             flex-direction: column;
-            align-items: center;
-            gap: 20px;
         }
-
-        .game-board {
-            background-color: #000;
-            border: 10px solid #333;
-            border-radius: 5px;
-            display: grid;
-            grid-template-columns: repeat(19, 1fr);
-            grid-template-rows: repeat(21, 1fr);
-            width: 100%;
-            max-width: 570px;
-            aspect-ratio: 19/21;
-            position: relative;
-            overflow: hidden;
-            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.7);
+        
+        .game-header {
+            text-align: center;
+            margin-bottom: 20px;
         }
-
-        .cell {
-            width: 100%;
-            height: 100%;
+        
+        .game-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #ffd700;
+        }
+        
+        .board-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 20px;
+            flex: 1;
             display: flex;
             justify-content: center;
             align-items: center;
         }
-
-        .wall {
-            background-color: #0066cc;
-            border-radius: 3px;
-            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+        
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: repeat(20, 1fr);
+            gap: 1px;
+            width: 300px;
+            height: 600px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            padding: 5px;
         }
-
-        .dot {
-            width: 6px;
-            height: 6px;
-            background-color: #ffcc00;
-            border-radius: 50%;
-        }
-
-        .power-pellet {
-            width: 12px;
-            height: 12px;
-            background-color: #ffcc00;
-            border-radius: 50%;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.3); }
-            100% { transform: scale(1); }
-        }
-
-        .pacman {
-            width: 80%;
-            height: 80%;
-            background-color: #ffcc00;
-            border-radius: 50%;
+        
+        .cell {
+            background: rgba(255, 255, 255, 0.05);
+            transition: all 0.2s;
             position: relative;
-            z-index: 10;
+            overflow: hidden;
         }
-
-        .pacman::before {
-            content: "";
+        
+        /* Яркие квадратные детали Лего */
+        .cell.filled {
+            border: 2px solid rgba(0, 0, 0, 0.4);
+            box-shadow: 
+                inset 0 0 10px rgba(255, 255, 255, 0.3),
+                0 3px 6px rgba(0, 0, 0, 0.4);
+        }
+        
+        /* Блестящий эффект пластика */
+        .cell.filled::before {
+            content: '';
             position: absolute;
-            width: 0;
-            height: 0;
-            border-style: solid;
-            border-width: 10px 0 10px 20px;
-            border-color: transparent transparent transparent #000;
-            top: 50%;
-            right: 30%;
-            transform: translateY(-50%);
-        }
-
-        .ghost {
-            width: 80%;
-            height: 80%;
-            border-radius: 50% 50% 0 0;
-            position: relative;
-            z-index: 5;
-        }
-
-        .ghost::after {
-            content: "";
-            position: absolute;
-            bottom: -5px;
+            top: 0;
             left: 0;
-            width: 100%;
-            height: 10px;
-            background: inherit;
-            clip-path: polygon(0 0, 20% 100%, 40% 0, 60% 100%, 80% 0, 100% 100%, 100% 0, 0 0);
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(135deg, 
+                    rgba(255,255,255,0.4) 0%, 
+                    rgba(255,255,255,0.1) 30%, 
+                    rgba(255,255,255,0) 50%,
+                    rgba(0,0,0,0.1) 70%,
+                    rgba(0,0,0,0.2) 100%);
+            z-index: 1;
         }
-
-        .blinky { background-color: #ff3300; }
-        .pinky { background-color: #ff99cc; }
-        .inky { background-color: #00ccff; }
-        .clyde { background-color: #ff9900; }
-
-        .scared {
-            background-color: #0066cc !important;
-            animation: scared 0.8s infinite;
+        
+        /* Круглое скрепление Лего */
+        .cell.filled::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50%;
+            height: 50%;
+            background: 
+                radial-gradient(circle at 30% 30%, 
+                    rgba(255,255,255,0.6) 0%, 
+                    rgba(255,255,255,0.2) 40%,
+                    rgba(0,0,0,0.3) 70%);
+            border-radius: 50%;
+            box-shadow: 
+                inset 0 2px 4px rgba(0, 0, 0, 0.5),
+                0 1px 2px rgba(255, 255, 255, 0.3);
+            z-index: 2;
         }
-
-        @keyframes scared {
-            0% { background-color: #0066cc; }
-            50% { background-color: #ffffff; }
-            100% { background-color: #0066cc; }
+        
+        /* Внутренний круг скрепления */
+        .cell.filled .lego-connector-inner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30%;
+            height: 30%;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            box-shadow: 
+                inset 0 1px 3px rgba(255, 255, 255, 0.4),
+                0 0 2px rgba(0, 0, 0, 0.4);
+            z-index: 3;
         }
-
-        .game-info {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            max-width: 570px;
-            background-color: #333;
-            color: white;
-            padding: 15px;
-            border-radius: 10px;
-            font-weight: bold;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        
+        /* Боковые грани детали Лего */
+        .cell.filled .lego-edge {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.15);
+            z-index: 0;
         }
-
-        .score, .lives, .level {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        
+        .cell.filled .lego-edge.top {
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
         }
-
-        .score-value, .lives-value, .level-value {
-            font-size: 1.5rem;
-            color: #ffcc00;
+        
+        .cell.filled .lego-edge.bottom {
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
         }
-
+        
+        .cell.filled .lego-edge.left {
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+        }
+        
+        .cell.filled .lego-edge.right {
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+        }
+        
         .controls {
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-            margin-top: 10px;
+            justify-content: space-between;
         }
-
-        .buttons {
-            display: flex;
-            gap: 15px;
-        }
-
+        
         button {
-            background-color: #ff3300;
+            background: #ff5722;
             color: white;
             border: none;
-            padding: 12px 25px;
-            border-radius: 50px;
-            font-size: 1.1rem;
-            font-weight: bold;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
             cursor: pointer;
-            box-shadow: 0 5px 0 #cc2900;
-            transition: all 0.1s;
+            transition: all 0.3s;
+            font-weight: bold;
         }
-
+        
         button:hover {
-            background-color: #ff4411;
-            transform: translateY(2px);
-            box-shadow: 0 3px 0 #cc2900;
+            background: #ff7043;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 87, 34, 0.4);
         }
-
-        button:active {
-            transform: translateY(5px);
-            box-shadow: 0 0 0 #cc2900;
+        
+        .side-panel {
+            width: 250px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
-
-        .instructions {
-            background-color: #fff;
-            padding: 15px;
+        
+        .next-piece {
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 10px;
-            margin-top: 20px;
-            width: 100%;
-            max-width: 570px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .instructions h3 {
-            color: #0066cc;
-            margin-bottom: 10px;
+            padding: 15px;
             text-align: center;
         }
-
-        .instructions p {
+        
+        .next-piece h3 {
+            margin-bottom: 10px;
+            color: #ffd700;
+        }
+        
+        .next-piece-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 2px;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            padding: 5px;
+        }
+        
+        .instructions {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+        }
+        
+        .instructions h3 {
+            margin-bottom: 10px;
+            color: #ffd700;
+        }
+        
+        .instructions ul {
+            list-style-type: none;
+            padding-left: 10px;
+        }
+        
+        .instructions li {
             margin-bottom: 8px;
             font-size: 0.9rem;
         }
-
-        .keyboard-controls {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-top: 10px;
+        
+        .game-over {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            display: none;
         }
-
-        .key {
-            background-color: #333;
-            color: white;
-            padding: 8px;
-            border-radius: 5px;
-            text-align: center;
-            font-weight: bold;
+        
+        .game-over h2 {
+            font-size: 3rem;
+            color: #ff5722;
+            margin-bottom: 20px;
         }
-
-        .footer {
-            margin-top: 20px;
-            text-align: center;
-            color: white;
-            font-size: 0.9rem;
+        
+        .game-over p {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
         }
-
-        @media (max-width: 600px) {
-            .logo {
-                font-size: 2.2rem;
-            }
-            
-            .game-info {
+        
+        @media (max-width: 768px) {
+            .game-container {
                 flex-direction: column;
-                gap: 15px;
             }
             
-            .buttons {
-                flex-direction: column;
+            .side-panel {
                 width: 100%;
+                flex-direction: row;
+                justify-content: space-between;
             }
             
-            button {
-                width: 100%;
+            .next-piece, .instructions {
+                flex: 1;
+            }
+            
+            .game-board {
+                width: 250px;
+                height: 500px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="logo">LEGO® PAC-MAN</div>
-            <div class="subtitle">Pixel Arcade Adventure</div>
-        </div>
-        
-        <div class="game-container">
-            <div class="game-board" id="gameBoard">
-                <!-- Игровое поле будет сгенерировано JavaScript -->
+    <div class="game-container">
+        <div class="game-area">
+            <div class="game-header">
+                <h1>Лего Тетрис</h1>
             </div>
             
-            <div class="game-info">
-                <div class="score">
-                    <div>ОЧКИ</div>
-                    <div class="score-value" id="score">0</div>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-label">Счет</div>
+                    <div class="stat-value" id="score">0</div>
                 </div>
-                <div class="lives">
-                    <div>ЖИЗНИ</div>
-                    <div class="lives-value" id="lives">3</div>
+                <div class="stat">
+                    <div class="stat-label">Уровень</div>
+                    <div class="stat-value" id="level">1</div>
                 </div>
-                <div class="level">
-                    <div>УРОВЕНЬ</div>
-                    <div class="level-value" id="level">1</div>
+                <div class="stat">
+                    <div class="stat-label">Линии</div>
+                    <div class="stat-value" id="lines">0</div>
                 </div>
+            </div>
+            
+            <div class="board-container">
+                <div class="game-board" id="board"></div>
             </div>
             
             <div class="controls">
-                <div class="buttons">
-                    <button id="startBtn">СТАРТ</button>
-                    <button id="pauseBtn">ПАУЗА</button>
-                    <button id="resetBtn">СБРОС</button>
-                </div>
+                <button id="start-btn">Старт</button>
+                <button id="pause-btn">Пауза</button>
+                <button id="reset-btn">Сброс</button>
+            </div>
+        </div>
+        
+        <div class="side-panel">
+            <div class="next-piece">
+                <h3>Следующая фигура</h3>
+                <div class="next-piece-container" id="next-piece"></div>
             </div>
             
             <div class="instructions">
-                <h3>УПРАВЛЕНИЕ</h3>
-                <p>Используйте стрелки на клавиатуре для перемещения Пакмана</p>
-                <p>Собирайте точки и избегайте призраков!</p>
-                
-                <div class="keyboard-controls">
-                    <div class="key">↑</div>
-                    <div class="key">ВВЕРХ</div>
-                    <div class="key"></div>
-                    <div class="key">←</div>
-                    <div class="key">ПАКМАН</div>
-                    <div class="key">→</div>
-                    <div class="key"></div>
-                    <div class="key">↓</div>
-                    <div class="key"></div>
-                </div>
+                <h3>Управление</h3>
+                <ul>
+                    <li>← → : Движение влево/вправо</li>
+                    <li>↑ : Поворот фигуры</li>
+                    <li>↓ : Ускорить падение</li>
+                    <li>Пробел: Пауза/продолжить</li>
+                </ul>
             </div>
         </div>
     </div>
     
-    <div class="footer">
-        Вдохновлено конструктором LEGO® 10323 "PAC-MAN Arcade" | Создано для GitHub
+    <div class="game-over" id="game-over">
+        <h2>Игра окончена!</h2>
+        <p>Ваш счет: <span id="final-score">0</span></p>
+        <button id="restart-btn">Играть снова</button>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Конфигурация игры
-            const config = {
-                rows: 21,
-                cols: 19,
-                cellSize: 30,
-                pacmanSpeed: 150,
-                ghostSpeed: 200,
-                dotScore: 10,
-                powerPelletScore: 50,
-                ghostScore: 200
-            };
-
-            // Состояние игры
-            const gameState = {
-                score: 0,
-                lives: 3,
-                level: 1,
-                isRunning: false,
-                isPaused: false,
-                dotsRemaining: 0,
-                powerMode: false,
-                powerModeTimer: null
-            };
-
-            // Элементы DOM
-            const gameBoard = document.getElementById('gameBoard');
-            const scoreElement = document.getElementById('score');
-            const livesElement = document.getElementById('lives');
-            const levelElement = document.getElementById('level');
-            const startBtn = document.getElementById('startBtn');
-            const pauseBtn = document.getElementById('pauseBtn');
-            const resetBtn = document.getElementById('resetBtn');
-
-            // Игровые объекты
-            let pacman = { row: 10, col: 9, direction: 'right' };
-            let ghosts = [
-                { row: 8, col: 9, type: 'blinky', direction: 'left' },
-                { row: 9, col: 8, type: 'pinky', direction: 'up' },
-                { row: 9, col: 10, type: 'inky', direction: 'down' },
-                { row: 10, col: 9, type: 'clyde', direction: 'right' }
-            ];
-
-            // Карта игрового поля (0 - пусто, 1 - стена, 2 - точка, 3 - энерджайзер)
-            const map = [
-                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-                [1,2,2,2,2,2,2,2,2,1,2,2,2,2,2,2,2,2,1],
-                [1,3,1,1,2,1,1,1,2,1,2,1,1,1,2,1,1,3,1],
-                [1,2,1,1,2,1,1,1,2,1,2,1,1,1,2,1,1,2,1],
-                [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
-                [1,2,1,1,2,1,2,1,1,1,1,1,2,1,2,1,1,2,1],
-                [1,2,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,2,1],
-                [1,1,1,1,2,1,1,1,0,1,0,1,1,1,2,1,1,1,1],
-                [0,0,0,1,2,1,0,0,0,0,0,0,0,1,2,1,0,0,0],
-                [1,1,1,1,2,1,0,1,1,0,1,1,0,1,2,1,1,1,1],
-                [0,0,0,0,2,0,0,1,0,0,0,1,0,0,2,0,0,0,0],
-                [1,1,1,1,2,1,0,1,1,1,1,1,0,1,2,1,1,1,1],
-                [0,0,0,1,2,1,0,0,0,0,0,0,0,1,2,1,0,0,0],
-                [1,1,1,1,2,1,0,1,1,1,1,1,0,1,2,1,1,1,1],
-                [1,2,2,2,2,2,2,2,2,1,2,2,2,2,2,2,2,2,1],
-                [1,2,1,1,2,1,1,1,2,1,2,1,1,1,2,1,1,2,1],
-                [1,3,2,1,2,2,2,2,2,2,2,2,2,2,2,1,2,3,1],
-                [1,1,2,1,2,1,2,1,1,1,1,1,2,1,2,1,2,1,1],
-                [1,2,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,2,1],
-                [1,2,1,1,1,1,1,1,2,1,2,1,1,1,1,1,1,2,1],
-                [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
-            ];
-
-            // Инициализация игры
-            function initGame() {
-                createGameBoard();
-                updateGameInfo();
-                setupEventListeners();
+        // Конфигурация игры
+        const ROWS = 20;
+        const COLS = 10;
+        const EMPTY = 'empty';
+        
+        // Яркие цвета для фигур тетриса
+        const SHAPES = [
+            { 
+                shape: [
+                    [1, 1, 1, 1]
+                ],
+                color: '#FF1744' // ярко-красный
+            },
+            { 
+                shape: [
+                    [1, 1],
+                    [1, 1]
+                ],
+                color: '#FFEA00' // ярко-желтый
+            },
+            { 
+                shape: [
+                    [0, 1, 0],
+                    [1, 1, 1]
+                ],
+                color: '#00E676' // ярко-зеленый
+            },
+            { 
+                shape: [
+                    [1, 1, 0],
+                    [0, 1, 1]
+                ],
+                color: '#2979FF' // ярко-синий
+            },
+            { 
+                shape: [
+                    [0, 1, 1],
+                    [1, 1, 0]
+                ],
+                color: '#FF9100' // ярко-оранжевый
+            },
+            { 
+                shape: [
+                    [1, 0, 0],
+                    [1, 1, 1]
+                ],
+                color: '#D500F9' // ярко-фиолетовый
+            },
+            { 
+                shape: [
+                    [0, 0, 1],
+                    [1, 1, 1]
+                ],
+                color: '#00E5FF' // ярко-голубой
             }
-
-            // Создание игрового поля
-            function createGameBoard() {
-                gameBoard.innerHTML = '';
-                gameState.dotsRemaining = 0;
-                
-                for (let row = 0; row < config.rows; row++) {
-                    for (let col = 0; col < config.cols; col++) {
-                        const cell = document.createElement('div');
-                        cell.className = 'cell';
-                        cell.dataset.row = row;
-                        cell.dataset.col = col;
-                        
-                        switch (map[row][col]) {
-                            case 1: // Стена
-                                cell.classList.add('wall');
-                                break;
-                            case 2: // Точка
-                                const dot = document.createElement('div');
-                                dot.className = 'dot';
-                                cell.appendChild(dot);
-                                gameState.dotsRemaining++;
-                                break;
-                            case 3: // Энерджайзер
-                                const powerPellet = document.createElement('div');
-                                powerPellet.className = 'power-pellet';
-                                cell.appendChild(powerPellet);
-                                gameState.dotsRemaining++;
-                                break;
+        ];
+        
+        // Элементы DOM
+        const boardElement = document.getElementById('board');
+        const nextPieceElement = document.getElementById('next-piece');
+        const scoreElement = document.getElementById('score');
+        const levelElement = document.getElementById('level');
+        const linesElement = document.getElementById('lines');
+        const startButton = document.getElementById('start-btn');
+        const pauseButton = document.getElementById('pause-btn');
+        const resetButton = document.getElementById('reset-btn');
+        const gameOverElement = document.getElementById('game-over');
+        const finalScoreElement = document.getElementById('final-score');
+        const restartButton = document.getElementById('restart-btn');
+        
+        // Состояние игры
+        let board = [];
+        let currentPiece = null;
+        let nextPiece = null;
+        let score = 0;
+        let level = 1;
+        let lines = 0;
+        let isPaused = false;
+        let isGameOver = false;
+        let dropInterval = null;
+        let dropSpeed = 1000; // начальная скорость падения (мс)
+        
+        // Инициализация игрового поля
+        function initBoard() {
+            board = [];
+            boardElement.innerHTML = '';
+            
+            for (let row = 0; row < ROWS; row++) {
+                board[row] = [];
+                for (let col = 0; col < COLS; col++) {
+                    board[row][col] = EMPTY;
+                    
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    boardElement.appendChild(cell);
+                }
+            }
+        }
+        
+        // Инициализация следующей фигуры
+        function initNextPiece() {
+            nextPieceElement.innerHTML = '';
+            
+            for (let row = 0; row < 4; row++) {
+                for (let col = 0; col < 4; col++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    nextPieceElement.appendChild(cell);
+                }
+            }
+        }
+        
+        // Создание случайной фигуры
+        function createPiece() {
+            const randomIndex = Math.floor(Math.random() * SHAPES.length);
+            const shapeData = SHAPES[randomIndex];
+            
+            return {
+                shape: shapeData.shape,
+                color: shapeData.color,
+                row: 0,
+                col: Math.floor((COLS - shapeData.shape[0].length) / 2)
+            };
+        }
+        
+        // Добавление элементов Лего к ячейке
+        function addLegoElements(cell) {
+            // Добавляем грани детали Лего
+            const edges = ['top', 'bottom', 'left', 'right'];
+            edges.forEach(edge => {
+                const edgeElement = document.createElement('div');
+                edgeElement.classList.add('lego-edge', edge);
+                cell.appendChild(edgeElement);
+            });
+            
+            // Добавляем внутренний круг скрепления
+            const connectorInner = document.createElement('div');
+            connectorInner.classList.add('lego-connector-inner');
+            cell.appendChild(connectorInner);
+        }
+        
+        // Отображение следующей фигуры
+        function renderNextPiece() {
+            const cells = nextPieceElement.querySelectorAll('.cell');
+            
+            // Очистка
+            cells.forEach(cell => {
+                cell.style.backgroundColor = '';
+                cell.classList.remove('filled');
+                // Удаляем старые элементы Лего
+                const edges = cell.querySelectorAll('.lego-edge, .lego-connector-inner');
+                edges.forEach(edge => edge.remove());
+            });
+            
+            // Отрисовка следующей фигуры
+            if (nextPiece) {
+                for (let row = 0; row < nextPiece.shape.length; row++) {
+                    for (let col = 0; col < nextPiece.shape[row].length; col++) {
+                        if (nextPiece.shape[row][col]) {
+                            const index = row * 4 + col;
+                            cells[index].style.backgroundColor = nextPiece.color;
+                            cells[index].classList.add('filled');
+                            addLegoElements(cells[index]);
                         }
-                        
-                        gameBoard.appendChild(cell);
                     }
                 }
-                
-                // Размещение Пакмана и призраков
-                placePacman();
-                placeGhosts();
             }
-
-            // Размещение Пакмана на поле
-            function placePacman() {
-                pacman = { row: 10, col: 9, direction: 'right' };
-                updatePacmanPosition();
-            }
-
-            // Размещение призраков на поле
-            function placeGhosts() {
-                ghosts = [
-                    { row: 8, col: 9, type: 'blinky', direction: 'left' },
-                    { row: 9, col: 8, type: 'pinky', direction: 'up' },
-                    { row: 9, col: 10, type: 'inky', direction: 'down' },
-                    { row: 10, col: 9, type: 'clyde', direction: 'right' }
-                ];
-                updateGhostsPosition();
-            }
-
-            // Обновление позиции Пакмана
-            function updatePacmanPosition() {
-                // Удаляем Пакмана со всех клеток
-                document.querySelectorAll('.pacman').forEach(el => el.remove());
-                
-                // Добавляем Пакмана на текущую позицию
-                const cell = document.querySelector(`.cell[data-row="${pacman.row}"][data-col="${pacman.col}"]`);
-                const pacmanElement = document.createElement('div');
-                pacmanElement.className = 'pacman';
-                
-                // Поворачиваем Пакмана в зависимости от направления
-                switch (pacman.direction) {
-                    case 'up':
-                        pacmanElement.style.transform = 'rotate(-90deg)';
-                        break;
-                    case 'down':
-                        pacmanElement.style.transform = 'rotate(90deg)';
-                        break;
-                    case 'left':
-                        pacmanElement.style.transform = 'rotate(180deg)';
-                        break;
-                    case 'right':
-                        pacmanElement.style.transform = 'rotate(0deg)';
-                        break;
-                }
-                
-                cell.appendChild(pacmanElement);
-            }
-
-            // Обновление позиций призраков
-            function updateGhostsPosition() {
-                // Удаляем всех призраков
-                document.querySelectorAll('.ghost').forEach(el => el.remove());
-                
-                // Добавляем призраков на их позиции
-                ghosts.forEach(ghost => {
-                    const cell = document.querySelector(`.cell[data-row="${ghost.row}"][data-col="${ghost.col}"]`);
-                    const ghostElement = document.createElement('div');
-                    ghostElement.className = `ghost ${ghost.type}`;
-                    
-                    if (gameState.powerMode) {
-                        ghostElement.classList.add('scared');
+        }
+        
+        // Отрисовка игрового поля
+        function renderBoard() {
+            const cells = boardElement.querySelectorAll('.cell');
+            
+            // Очистка поля
+            cells.forEach(cell => {
+                cell.style.backgroundColor = '';
+                cell.classList.remove('filled');
+                // Удаляем старые элементы Лего
+                const edges = cell.querySelectorAll('.lego-edge, .lego-connector-inner');
+                edges.forEach(edge => edge.remove());
+            });
+            
+            // Отрисовка зафиксированных фигур
+            for (let row = 0; row < ROWS; row++) {
+                for (let col = 0; col < COLS; col++) {
+                    if (board[row][col] !== EMPTY) {
+                        const index = row * COLS + col;
+                        cells[index].style.backgroundColor = board[row][col];
+                        cells[index].classList.add('filled');
+                        addLegoElements(cells[index]);
                     }
-                    
-                    cell.appendChild(ghostElement);
-                });
-            }
-
-            // Обновление информации об игре
-            function updateGameInfo() {
-                scoreElement.textContent = gameState.score;
-                livesElement.textContent = gameState.lives;
-                levelElement.textContent = gameState.level;
-            }
-
-            // Настройка обработчиков событий
-            function setupEventListeners() {
-                // Управление с клавиатуры
-                document.addEventListener('keydown', handleKeyPress);
-                
-                // Кнопки управления
-                startBtn.addEventListener('click', startGame);
-                pauseBtn.addEventListener('click', togglePause);
-                resetBtn.addEventListener('click', resetGame);
-            }
-
-            // Обработка нажатий клавиш
-            function handleKeyPress(e) {
-                if (!gameState.isRunning || gameState.isPaused) return;
-                
-                switch (e.key) {
-                    case 'ArrowUp':
-                        pacman.direction = 'up';
-                        break;
-                    case 'ArrowDown':
-                        pacman.direction = 'down';
-                        break;
-                    case 'ArrowLeft':
-                        pacman.direction = 'left';
-                        break;
-                    case 'ArrowRight':
-                        pacman.direction = 'right';
-                        break;
-                }
-                
-                movePacman();
-            }
-
-            // Движение Пакмана
-            function movePacman() {
-                let newRow = pacman.row;
-                let newCol = pacman.col;
-                
-                switch (pacman.direction) {
-                    case 'up':
-                        newRow--;
-                        break;
-                    case 'down':
-                        newRow++;
-                        break;
-                    case 'left':
-                        newCol--;
-                        break;
-                    case 'right':
-                        newCol++;
-                        break;
-                }
-                
-                // Проверка на выход за границы (телепортация)
-                if (newRow < 0) newRow = config.rows - 1;
-                if (newRow >= config.rows) newRow = 0;
-                if (newCol < 0) newCol = config.cols - 1;
-                if (newCol >= config.cols) newCol = 0;
-                
-                // Проверка на столкновение со стеной
-                if (map[newRow][newCol] !== 1) {
-                    pacman.row = newRow;
-                    pacman.col = newCol;
-                    
-                    // Сбор точек
-                    collectDot();
-                    
-                    // Проверка на столкновение с призраками
-                    checkGhostCollision();
-                    
-                    updatePacmanPosition();
                 }
             }
-
-            // Сбор точек
-            function collectDot() {
-                const cell = document.querySelector(`.cell[data-row="${pacman.row}"][data-col="${pacman.col}"]`);
-                
-                if (cell.querySelector('.dot')) {
-                    cell.querySelector('.dot').remove();
-                    gameState.score += config.dotScore;
-                    gameState.dotsRemaining--;
-                } else if (cell.querySelector('.power-pellet')) {
-                    cell.querySelector('.power-pellet').remove();
-                    gameState.score += config.powerPelletScore;
-                    gameState.dotsRemaining--;
-                    activatePowerMode();
-                }
-                
-                updateGameInfo();
-                
-                // Проверка на завершение уровня
-                if (gameState.dotsRemaining === 0) {
-                    levelUp();
-                }
-            }
-
-            // Активация режима силы
-            function activatePowerMode() {
-                gameState.powerMode = true;
-                
-                // Сбрасываем таймер, если он уже активен
-                if (gameState.powerModeTimer) {
-                    clearTimeout(gameState.powerModeTimer);
-                }
-                
-                // Устанавливаем таймер на 10 секунд
-                gameState.powerModeTimer = setTimeout(() => {
-                    gameState.powerMode = false;
-                    updateGhostsPosition();
-                }, 10000);
-                
-                updateGhostsPosition();
-            }
-
-            // Проверка столкновения с призраками
-            function checkGhostCollision() {
-                for (let i = 0; i < ghosts.length; i++) {
-                    if (ghosts[i].row === pacman.row && ghosts[i].col === pacman.col) {
-                        if (gameState.powerMode) {
-                            // Пакман съедает призрака
-                            gameState.score += config.ghostScore;
-                            // Возвращаем призрака на стартовую позицию
-                            ghosts[i].row = 9;
-                            ghosts[i].col = 9;
-                            updateGameInfo();
-                        } else {
-                            // Призрак съедает Пакмана
-                            gameState.lives--;
-                            updateGameInfo();
+            
+            // Отрисовка текущей фигуры
+            if (currentPiece) {
+                for (let row = 0; row < currentPiece.shape.length; row++) {
+                    for (let col = 0; col < currentPiece.shape[row].length; col++) {
+                        if (currentPiece.shape[row][col]) {
+                            const boardRow = currentPiece.row + row;
+                            const boardCol = currentPiece.col + col;
                             
-                            if (gameState.lives <= 0) {
-                                gameOver();
-                            } else {
-                                // Перезапуск уровня с теми же очками
-                                resetLevel();
+                            if (boardRow >= 0 && boardRow < ROWS && boardCol >= 0 && boardCol < COLS) {
+                                const index = boardRow * COLS + boardCol;
+                                cells[index].style.backgroundColor = currentPiece.color;
+                                cells[index].classList.add('filled');
+                                addLegoElements(cells[index]);
                             }
                         }
-                        break;
                     }
                 }
             }
-
-            // Движение призраков
-            function moveGhosts() {
-                ghosts.forEach(ghost => {
-                    // Простой ИИ для призраков
-                    const directions = ['up', 'down', 'left', 'right'];
-                    let validDirections = [];
-                    
-                    // Проверяем возможные направления
-                    directions.forEach(dir => {
-                        let newRow = ghost.row;
-                        let newCol = ghost.col;
+        }
+        
+        // Проверка столкновений
+        function checkCollision(piece, rowOffset = 0, colOffset = 0) {
+            for (let row = 0; row < piece.shape.length; row++) {
+                for (let col = 0; col < piece.shape[row].length; col++) {
+                    if (piece.shape[row][col]) {
+                        const newRow = piece.row + row + rowOffset;
+                        const newCol = piece.col + col + colOffset;
                         
-                        switch (dir) {
-                            case 'up':
-                                newRow--;
-                                break;
-                            case 'down':
-                                newRow++;
-                                break;
-                            case 'left':
-                                newCol--;
-                                break;
-                            case 'right':
-                                newCol++;
-                                break;
+                        // Проверка границ и других фигур
+                        if (
+                            newRow >= ROWS || 
+                            newCol < 0 || 
+                            newCol >= COLS || 
+                            (newRow >= 0 && board[newRow][newCol] !== EMPTY)
+                        ) {
+                            return true;
                         }
-                        
-                        // Проверка на выход за границы
-                        if (newRow < 0) newRow = config.rows - 1;
-                        if (newRow >= config.rows) newRow = 0;
-                        if (newCol < 0) newCol = config.cols - 1;
-                        if (newCol >= config.cols) newCol = 0;
-                        
-                        // Проверка на стену
-                        if (map[newRow][newCol] !== 1) {
-                            validDirections.push(dir);
-                        }
-                    });
-                    
-                    // Выбираем случайное направление из допустимых
-                    if (validDirections.length > 0) {
-                        const randomIndex = Math.floor(Math.random() * validDirections.length);
-                        ghost.direction = validDirections[randomIndex];
-                        
-                        // Двигаем призрака
-                        switch (ghost.direction) {
-                            case 'up':
-                                ghost.row--;
-                                break;
-                            case 'down':
-                                ghost.row++;
-                                break;
-                            case 'left':
-                                ghost.col--;
-                                break;
-                            case 'right':
-                                ghost.col++;
-                                break;
-                        }
-                        
-                        // Проверка на выход за границы
-                        if (ghost.row < 0) ghost.row = config.rows - 1;
-                        if (ghost.row >= config.rows) ghost.row = 0;
-                        if (ghost.col < 0) ghost.col = config.cols - 1;
-                        if (ghost.col >= config.cols) ghost.col = 0;
                     }
-                });
-                
-                updateGhostsPosition();
-                checkGhostCollision();
+                }
             }
-
-            // Запуск игры
-            function startGame() {
-                if (!gameState.isRunning) {
-                    gameState.isRunning = true;
-                    gameState.isPaused = false;
-                    
-                    // Запуск игрового цикла
-                    gameLoop = setInterval(() => {
-                        if (!gameState.isPaused) {
-                            movePacman();
-                            moveGhosts();
+            
+            return false;
+        }
+        
+        // Перемещение фигуры влево
+        function moveLeft() {
+            if (!currentPiece || isPaused || isGameOver) return;
+            
+            if (!checkCollision(currentPiece, 0, -1)) {
+                currentPiece.col--;
+                renderBoard();
+            }
+        }
+        
+        // Перемещение фигуры вправо
+        function moveRight() {
+            if (!currentPiece || isPaused || isGameOver) return;
+            
+            if (!checkCollision(currentPiece, 0, 1)) {
+                currentPiece.col++;
+                renderBoard();
+            }
+        }
+        
+        // Поворот фигуры
+        function rotatePiece() {
+            if (!currentPiece || isPaused || isGameOver) return;
+            
+            // Создаем копию фигуры для проверки столкновений
+            const rotatedPiece = {
+                ...currentPiece,
+                shape: []
+            };
+            
+            // Поворачиваем матрицу фигуры на 90 градусов
+            for (let col = 0; col < currentPiece.shape[0].length; col++) {
+                rotatedPiece.shape[col] = [];
+                for (let row = currentPiece.shape.length - 1; row >= 0; row--) {
+                    rotatedPiece.shape[col][currentPiece.shape.length - 1 - row] = currentPiece.shape[row][col];
+                }
+            }
+            
+            // Проверяем столкновения после поворота
+            if (!checkCollision(rotatedPiece)) {
+                currentPiece.shape = rotatedPiece.shape;
+                renderBoard();
+            }
+        }
+        
+        // Падение фигуры
+        function dropPiece() {
+            if (!currentPiece || isPaused || isGameOver) return;
+            
+            if (!checkCollision(currentPiece, 1, 0)) {
+                currentPiece.row++;
+                renderBoard();
+            } else {
+                // Фигура достигла дна или другой фигуры
+                lockPiece();
+                clearLines();
+                spawnPiece();
+            }
+        }
+        
+        // Фиксация фигуры на поле
+        function lockPiece() {
+            for (let row = 0; row < currentPiece.shape.length; row++) {
+                for (let col = 0; col < currentPiece.shape[row].length; col++) {
+                    if (currentPiece.shape[row][col]) {
+                        const boardRow = currentPiece.row + row;
+                        const boardCol = currentPiece.col + col;
+                        
+                        if (boardRow >= 0) {
+                            board[boardRow][boardCol] = currentPiece.color;
                         }
-                    }, config.pacmanSpeed);
-                    
-                    startBtn.textContent = 'РЕСТАРТ';
-                } else {
-                    resetGame();
+                    }
                 }
             }
-
-            // Пауза/продолжение игры
-            function togglePause() {
-                if (gameState.isRunning) {
-                    gameState.isPaused = !gameState.isPaused;
-                    pauseBtn.textContent = gameState.isPaused ? 'ПРОДОЛЖИТЬ' : 'ПАУЗА';
+        }
+        
+        // Проверка и удаление заполненных линий
+        function clearLines() {
+            let linesCleared = 0;
+            
+            for (let row = ROWS - 1; row >= 0; row--) {
+                if (board[row].every(cell => cell !== EMPTY)) {
+                    // Удаляем линию
+                    board.splice(row, 1);
+                    // Добавляем новую пустую линию вверху
+                    board.unshift(Array(COLS).fill(EMPTY));
+                    linesCleared++;
+                    row++; // Проверяем ту же строку снова после сдвига
                 }
             }
-
-            // Сброс игры
-            function resetGame() {
-                clearInterval(gameLoop);
-                gameState.score = 0;
-                gameState.lives = 3;
-                gameState.level = 1;
-                gameState.isRunning = false;
-                gameState.isPaused = false;
-                gameState.powerMode = false;
+            
+            if (linesCleared > 0) {
+                // Обновляем счет
+                updateScore(linesCleared);
                 
-                if (gameState.powerModeTimer) {
-                    clearTimeout(gameState.powerModeTimer);
+                // Обновляем уровень и скорость
+                lines += linesCleared;
+                level = Math.floor(lines / 10) + 1;
+                dropSpeed = Math.max(100, 1000 - (level - 1) * 100);
+                
+                // Обновляем интервал падения
+                if (dropInterval) {
+                    clearInterval(dropInterval);
+                    dropInterval = setInterval(dropPiece, dropSpeed);
                 }
                 
-                startBtn.textContent = 'СТАРТ';
-                pauseBtn.textContent = 'ПАУЗА';
-                
-                createGameBoard();
-                updateGameInfo();
+                updateStats();
             }
-
-            // Сброс уровня
-            function resetLevel() {
-                placePacman();
-                placeGhosts();
+        }
+        
+        // Создание новой фигуры
+        function spawnPiece() {
+            currentPiece = nextPiece || createPiece();
+            nextPiece = createPiece();
+            
+            renderNextPiece();
+            
+            // Проверяем, не закончилась ли игра
+            if (checkCollision(currentPiece)) {
+                gameOver();
             }
-
-            // Переход на следующий уровень
-            function levelUp() {
-                gameState.level++;
-                updateGameInfo();
-                createGameBoard();
-            }
-
-            // Конец игры
-            function gameOver() {
-                clearInterval(gameLoop);
-                gameState.isRunning = false;
-                alert(`ИГРА ОКОНЧЕНА! Ваш счет: ${gameState.score}`);
+        }
+        
+        // Обновление счета
+        function updateScore(linesCleared) {
+            const points = [0, 40, 100, 300, 1200]; // очки за 0, 1, 2, 3, 4 линий
+            score += points[linesCleared] * level;
+        }
+        
+        // Обновление статистики
+        function updateStats() {
+            scoreElement.textContent = score;
+            levelElement.textContent = level;
+            linesElement.textContent = lines;
+        }
+        
+        // Начало игры
+        function startGame() {
+            if (isGameOver) {
                 resetGame();
             }
-
-            // Инициализация игры при загрузке страницы
-            initGame();
+            
+            isPaused = false;
+            startButton.textContent = 'Старт';
+            pauseButton.textContent = 'Пауза';
+            
+            if (!dropInterval) {
+                dropInterval = setInterval(dropPiece, dropSpeed);
+            }
+        }
+        
+        // Пауза игры
+        function pauseGame() {
+            if (isGameOver) return;
+            
+            isPaused = !isPaused;
+            
+            if (isPaused) {
+                pauseButton.textContent = 'Продолжить';
+                if (dropInterval) {
+                    clearInterval(dropInterval);
+                    dropInterval = null;
+                }
+            } else {
+                pauseButton.textContent = 'Пауза';
+                dropInterval = setInterval(dropPiece, dropSpeed);
+            }
+        }
+        
+        // Сброс игры
+        function resetGame() {
+            // Очистка интервала
+            if (dropInterval) {
+                clearInterval(dropInterval);
+                dropInterval = null;
+            }
+            
+            // Сброс состояния
+            score = 0;
+            level = 1;
+            lines = 0;
+            isPaused = false;
+            isGameOver = false;
+            
+            // Обновление статистики
+            updateStats();
+            
+            // Инициализация игрового поля
+            initBoard();
+            
+            // Создание фигур
+            nextPiece = createPiece();
+            spawnPiece();
+            
+            // Отрисовка
+            renderBoard();
+            renderNextPiece();
+            
+            // Скрытие экрана окончания игры
+            gameOverElement.style.display = 'none';
+            
+            // Обновление текста кнопок
+            startButton.textContent = 'Старт';
+            pauseButton.textContent = 'Пауза';
+        }
+        
+        // Конец игры
+        function gameOver() {
+            isGameOver = true;
+            
+            if (dropInterval) {
+                clearInterval(dropInterval);
+                dropInterval = null;
+            }
+            
+            finalScoreElement.textContent = score;
+            gameOverElement.style.display = 'flex';
+        }
+        
+        // Обработка нажатий клавиш
+        document.addEventListener('keydown', (e) => {
+            if (isGameOver) return;
+            
+            switch(e.key) {
+                case 'ArrowLeft':
+                    moveLeft();
+                    break;
+                case 'ArrowRight':
+                    moveRight();
+                    break;
+                case 'ArrowDown':
+                    dropPiece();
+                    break;
+                case 'ArrowUp':
+                    rotatePiece();
+                    break;
+                case ' ':
+                    e.preventDefault();
+                    pauseGame();
+                    break;
+            }
         });
+        
+        // Обработка кликов по кнопкам
+        startButton.addEventListener('click', startGame);
+        pauseButton.addEventListener('click', pauseGame);
+        resetButton.addEventListener('click', resetGame);
+        restartButton.addEventListener('click', resetGame);
+        
+        // Инициализация игры
+        initBoard();
+        initNextPiece();
+        resetGame();
     </script>
 </body>
 </html>
